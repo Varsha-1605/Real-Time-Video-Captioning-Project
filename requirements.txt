@@ -1,0 +1,15 @@
+numpy
+torch
+torchvision
+flask
+flask_socketio
+pillow
+opencv-python
+transformers
+accelerate
+opencv-contrib-python
+ultralytics
+gunicorn
+python-engineio
+gevent-websocket
+opencv-python-headless

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time AI Action Captioner Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Include Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.5.2/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🎥</div>
+                    <div>
+                        <h1>LiveSense AI</h1>
+                        <p class="subtitle">Real-Time Video Insights & Description</p>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Status</span>
+                        <span class="stat-value" id="connection-status">Disconnected</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">FPS</span>
+                        <span class="stat-value" id="fps-counter">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="video-section">
+                <!-- Video Container -->
+                <div class="video-container">
+                    <video id="webcam" autoplay muted playsinline></video>
+                    
+                    <!-- Video Overlay Controls -->
+                    <div class="video-overlay">
+                        <div class="overlay-top">
+                            <div class="recording-indicator" id="recording-indicator">
+                                <div class="recording-dot"></div>
+                                <span>LIVE</span>
+                            </div>
+                            <div class="quality-indicator" id="quality-indicator">
+                                <span>HD</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Caption Container -->
+                        <div class="caption-overlay">
+                            <div class="caption-content">
+                                <p id="caption-text">Ready to start captioning...</p>
+                                <div class="caption-metadata">
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" id="confidence-fill"></div>
+                                    </div>
+                                    <span class="confidence-text" id="confidence-text">0%</span>
+                                    <span class="timestamp" id="caption-timestamp"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls-section">
+                    <div class="main-controls">
+                        <button id="startButton" class="btn btn-primary">
+                            <span class="btn-icon">▶</span>
+                            Start Analysis
+                        </button>
+                        <button id="stopButton" class="btn btn-secondary" disabled>
+                            <span class="btn-icon">⏹</span>
+                            Stop Analysis
+                        </button>
+                    </div>
+                    
+                    <div class="advanced-controls">
+                        <button id="muteButton" class="btn btn-outline">
+                            <span class="btn-icon">🔊</span>
+                            Audio
+                        </button>
+                        <button id="settingsButton" class="btn btn-outline">
+                            <span class="btn-icon">⚙️</span>
+                            Settings
+                        </button>
+                        <button id="fullscreenButton" class="btn btn-outline">
+                            <span class="btn-icon">⛶</span>
+                            Fullscreen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Performance Metrics -->
+                <div class="metrics-panel">
+                    <h3>Performance Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-value" id="latency-value">0ms</div>
+                            <div class="metric-label">Latency</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="accuracy-value">0%</div>
+                            <div class="metric-label">Avg Confidence</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="processed-frames">0</div>
+                            <div class="metric-label">Frames Processed</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="captions-count">0</div>
+                            <div class="metric-label">Captions Generated</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Captions History -->
+                <div class="history-panel">
+                    <h3>Caption History</h3>
+                    <div class="history-list" id="history-list">
+                        <div class="history-item">
+                            <div class="history-text">No captions yet</div>
+                            <div class="history-meta">
+                                <span class="history-confidence">-</span>
+                                <span class="history-time">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="system-panel">
+                    <h3>System Information</h3>
+                    <div class="system-info">
+                        <div class="info-item">
+                            <span class="info-label">Device:</span>
+                            <span class="info-value" id="device-info">Loading...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Model:</span>
+                            <span class="info-value">BLIP-Base</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Resolution:</span>
+                            <span class="info-value" id="resolution-info">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Cache Hit Rate:</span>
+                            <span class="info-value" id="cache-info">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="modal-close" id="closeSettings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label>Frame Rate</label>
+                        <select id="frameRateSelect">
+                            <option value="10">10 FPS</option>
+                            <option value="15" selected>15 FPS</option>
+                            <option value="20">20 FPS</option>
+                            <option value="30">30 FPS</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Image Quality</label>
+                        <input type="range" id="qualitySlider" min="0.3" max="0.9" step="0.1" value="0.7">
+                        <span id="qualityValue">70%</span>
+                    </div>
+                    <div class="setting-group">
+                        <label>Audio Narration</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="audioToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label>Confidence Threshold</label>
+                        <input type="range" id="confidenceSlider" min="0.1" max="1.0" step="0.1" value="0.6">
+                        <span id="confidenceThreshold">60%</span>
+                    </div>
+                    <div class="setting-group">
+                        <label>Auto-Pause on Low Light</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="lowLightToggle">
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="resetSettings">Reset to Default</button>
+                    <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="status-message">Ready to start</span>
+            </div>
+            <div class="status-right">
+                <span class="keyboard-hint">Space: Start/Stop | M: Mute | S: Settings | F: Fullscreen</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Our application logic -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
