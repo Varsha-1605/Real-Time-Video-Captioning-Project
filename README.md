@@ -139,7 +139,7 @@ opencv-python-headless # 📹 Headless OpenCV
 ![Settings Panel](images/video_img4.jpeg)
 *Customize frame rate, quality, and captioning preferences*
 
-#### logs
+#### 📊 logs
 ![Settings Panel](images/video_img5.jpeg)
 
 </div>
