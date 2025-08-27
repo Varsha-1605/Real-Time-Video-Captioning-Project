@@ -121,6 +121,30 @@ opencv-python-headless # 📹 Headless OpenCV
 </details>
 
 ---
+## 📸 Demo
+
+### 🖼️ Application Screenshots
+
+<div align="center">
+
+#### 🎬 Main Interface
+![Main Interface](images/video_img1.png)
+*Real-time video captioning with live webcam feed and caption overlay*
+
+#### 📊 Performance Dashboard
+![Performance Dashboard](images/video_img2.png)
+*Monitor FPS, latency, and caption confidence in real-time*
+
+#### ⚙️ Settings Panel
+![Settings Panel](images/video_img4.png)
+*Customize frame rate, quality, and captioning preferences*
+
+#### logs
+![Settings Panel](images/video_img5.png)
+
+</div>
+
+---
 
 ## 🎮 Usage Guide
 
